@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- Información general de la aplicación -->
     <string name="app_name">PhoneLab</string>
     <string name="main_title">PhoneLab</string>
     <string name="main_subtitle">Explora, interpreta y combina periféricos del teléfono</string>
+
+    <!-- Menú principal -->
     <string name="accelerometer">Acelerómetro</string>
     <string name="accelerometer_desc">Lee X, Y y Z e interpreta movimiento y orientación.</string>
+
     <string name="flashlight">Linterna</string>
     <string name="flashlight_desc">Controla el flash del dispositivo y extiende su comportamiento.</string>
+
     <string name="vibration">Vibración</string>
     <string name="vibration_desc">Prueba distintos patrones hápticos y crea uno propio.</string>
+
     <string name="custom_sensor">Mi sensor / periférico</string>
     <string name="custom_sensor_desc">Investiga e implementa una función adicional.</string>
+
     <string name="open_module">Abrir módulo</string>
     <string name="student_note">Plantilla base: busca TODO en el código para localizar los retos.</string>
 
+    <!-- Acelerómetro -->
     <string name="acc_title">Acelerómetro</string>
     <string name="sensor_values">Valores del sensor</string>
     <string name="magnitude">Magnitud</string>
@@ -21,6 +30,7 @@
     <string name="orientation">Orientación</string>
     <string name="sensor_unavailable">Este sensor no está disponible en el dispositivo.</string>
 
+    <!-- Linterna -->
     <string name="flash_title">Linterna</string>
     <string name="flash_status">Estado</string>
     <string name="flash_off">APAGADA</string>
@@ -29,20 +39,25 @@
     <string name="intermittent_challenge">Modo intermitente (reto)</string>
     <string name="flash_unavailable">No se encontró un flash disponible en este dispositivo.</string>
 
+    <!-- Vibración -->
     <string name="vibration_title">Vibración</string>
     <string name="select_pattern">Selecciona un patrón</string>
     <string name="vibrate">Vibrar</string>
-    <string name="vibrator_unavailable">Este dispositivo no reporta un vibrador disponible.</string>
 
+    <string name="vibrator_unavailable">Este dispositivo no cuenta con un motor de vibración disponible.</string>
+
+    <!-- RETO V1: Patrones de vibración -->
+    <string-array name="vibration_patterns">
+        <item>Corta</item>
+        <item>Larga</item>
+        <item>Doble</item>
+        <item>Triple pulso progresivo</item>
+    </string-array>
+
+    <!-- Sensor adicional -->
     <string name="custom_title">Mi sensor / periférico</string>
     <string name="custom_intro">Esta pantalla es el punto de partida para tu implementación. Primero revisa qué sensores reporta tu dispositivo y después sustituye esta sección por tu propuesta.</string>
     <string name="available_sensors">Sensores detectados por Android</string>
     <string name="implementation_pending">Implementación del estudiante: PENDIENTE</string>
 
-    <string-array name="vibration_patterns">
-        <item>Corta</item>
-        <item>Larga</item>
-        <item>Doble</item>
-        <item>Personalizada (reto)</item>
-    </string-array>
 </resources>

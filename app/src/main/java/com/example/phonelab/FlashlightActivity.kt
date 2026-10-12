@@ -1,11 +1,13 @@
+
 package com.example.phonelab
 
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 
@@ -19,6 +21,30 @@ class FlashlightActivity : AppCompatActivity() {
     private lateinit var tvFlashMessage: TextView
     private lateinit var btnToggleFlash: MaterialButton
     private lateinit var btnIntermittent: MaterialButton
+
+    // RETO L1: Control del modo intermitente
+    private val handler = Handler(Looper.getMainLooper())
+    private var isBlinking = false
+    private val blinkInterval = 500L
+
+    private val blinkRunnable = object : Runnable {
+        override fun run() {
+            if (!isBlinking) return
+
+            // Alternar entre encendido y apagado
+            val success = setFlash(!isFlashOn)
+
+            if (!success) {
+                stopBlinking()
+                return
+            }
+
+            // Programar el siguiente cambio sin bloquear la interfaz
+            if (isBlinking) {
+                handler.postDelayed(this, blinkInterval)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,67 +61,125 @@ class FlashlightActivity : AppCompatActivity() {
         if (flashCameraId == null) {
             btnToggleFlash.isEnabled = false
             btnIntermittent.isEnabled = false
-            tvFlashMessage.text = getString(R.string.flash_unavailable)
+            tvFlashMessage.text =
+                getString(R.string.flash_unavailable)
         }
 
+        // Encendido y apagado manual
         btnToggleFlash.setOnClickListener {
+            if (isBlinking) {
+                stopBlinking()
+            }
             setFlash(!isFlashOn)
         }
 
+        // RETO L1: Iniciar o detener el parpadeo
         btnIntermittent.setOnClickListener {
-            // TODO RETO L1:
-            // Implementa un modo intermitente sin bloquear el hilo principal.
-            // Puedes investigar Handler/Runnable o coroutines.
-            Toast.makeText(
-                this,
-                "Reto pendiente: implementa el modo intermitente",
-                Toast.LENGTH_SHORT
-            ).show()
+            if (isBlinking) {
+                stopBlinking()
+            } else {
+                startBlinking()
+            }
         }
     }
 
     private fun findCameraWithFlash(): String? {
         return try {
             cameraManager.cameraIdList.firstOrNull { cameraId ->
-                val characteristics = cameraManager.getCameraCharacteristics(cameraId)
-                characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+                val characteristics =
+                    cameraManager.getCameraCharacteristics(cameraId)
+
+                characteristics.get(
+                    CameraCharacteristics.FLASH_INFO_AVAILABLE
+                ) == true
             }
         } catch (e: CameraAccessException) {
             null
         }
     }
 
-    private fun setFlash(enabled: Boolean) {
-        val cameraId = flashCameraId ?: return
+    // Controlar el estado físico de la linterna
+    private fun setFlash(enabled: Boolean): Boolean {
+        val cameraId = flashCameraId ?: return false
 
-        try {
+        return try {
             cameraManager.setTorchMode(cameraId, enabled)
             isFlashOn = enabled
+
             tvFlashStatus.text = if (enabled) {
                 getString(R.string.flash_on)
             } else {
                 getString(R.string.flash_off)
             }
+
             tvFlashMessage.text = if (enabled) {
                 "La linterna está activa."
             } else {
                 "La linterna está apagada."
             }
+
+            true
+
         } catch (e: CameraAccessException) {
-            tvFlashMessage.text = "No fue posible acceder al flash: ${e.reason}"
+            tvFlashMessage.text =
+                "No fue posible acceder al flash: ${e.reason}"
+            false
+
         } catch (e: IllegalArgumentException) {
-            tvFlashMessage.text = "El flash seleccionado no está disponible."
+            tvFlashMessage.text =
+                "El flash seleccionado no está disponible."
+            false
+        }
+    }
+
+    // RETO L1: Iniciar modo intermitente
+    private fun startBlinking() {
+        if (flashCameraId == null || isBlinking) return
+
+        isBlinking = true
+
+        btnIntermittent.text = "Detener parpadeo"
+        btnToggleFlash.isEnabled = false
+
+        tvFlashMessage.text = "Modo intermitente activado."
+
+        handler.post(blinkRunnable)
+    }
+
+    // RETO L1: Detener modo intermitente
+    private fun stopBlinking() {
+        isBlinking = false
+
+        // Cancelar las ejecuciones pendientes
+        handler.removeCallbacks(blinkRunnable)
+
+        // Apagar la linterna
+        if (isFlashOn) {
+            setFlash(false)
+        }
+
+        btnIntermittent.text = "Iniciar parpadeo"
+        btnToggleFlash.isEnabled = flashCameraId != null
+
+        if (flashCameraId != null) {
+            tvFlashMessage.text = "Modo intermitente detenido."
         }
     }
 
     override fun onStop() {
         super.onStop()
-        // Evita dejar la linterna encendida al abandonar la pantalla.
+
+        // Detener el parpadeo al abandonar la pantalla
+        stopBlinking()
+
+        // Evitar dejar encendida la linterna
         if (isFlashOn) {
             setFlash(false)
         }
     }
 
-    // TODO RETO L2 (opcional):
-    // Agrega un modo SOS o permite elegir la velocidad de parpadeo.
+    override fun onDestroy() {
+        handler.removeCallbacks(blinkRunnable)
+        super.onDestroy()
+    }
 }

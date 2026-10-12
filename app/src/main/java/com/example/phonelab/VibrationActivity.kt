@@ -5,7 +5,6 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.widget.Spinner
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 
@@ -23,11 +22,14 @@ class VibrationActivity : AppCompatActivity() {
         spinnerPatterns = findViewById(R.id.spinnerPatterns)
         tvVibrationInfo = findViewById(R.id.tvVibrationInfo)
 
-        val btnVibrate = findViewById<MaterialButton>(R.id.btnVibrate)
+        val btnVibrate =
+            findViewById<MaterialButton>(R.id.btnVibrate)
 
+        // Verificar si el dispositivo tiene vibrador
         if (!vibrator.hasVibrator()) {
             btnVibrate.isEnabled = false
-            tvVibrationInfo.text = getString(R.string.vibrator_unavailable)
+            tvVibrationInfo.text =
+                getString(R.string.vibrator_unavailable)
         }
 
         btnVibrate.setOnClickListener {
@@ -36,7 +38,13 @@ class VibrationActivity : AppCompatActivity() {
     }
 
     private fun playSelectedPattern() {
+
+        // Detener cualquier vibración anterior
+        vibrator.cancel()
+
         when (spinnerPatterns.selectedItemPosition) {
+
+            // Patrón 1: Vibración corta
             0 -> {
                 vibrator.vibrate(
                     VibrationEffect.createOneShot(
@@ -44,9 +52,12 @@ class VibrationActivity : AppCompatActivity() {
                         VibrationEffect.DEFAULT_AMPLITUDE
                     )
                 )
-                tvVibrationInfo.text = "Patrón ejecutado: vibración corta"
+
+                tvVibrationInfo.text =
+                    "Patrón ejecutado: vibración corta (150 ms)"
             }
 
+            // Patrón 2: Vibración larga
             1 -> {
                 vibrator.vibrate(
                     VibrationEffect.createOneShot(
@@ -54,30 +65,64 @@ class VibrationActivity : AppCompatActivity() {
                         VibrationEffect.DEFAULT_AMPLITUDE
                     )
                 )
-                tvVibrationInfo.text = "Patrón ejecutado: vibración larga"
+
+                tvVibrationInfo.text =
+                    "Patrón ejecutado: vibración larga (700 ms)"
             }
 
+            // Patrón 3: Doble vibración
             2 -> {
-                val pattern = longArrayOf(0, 180, 120, 180)
+                // Inicio inmediato, pulso de 180 ms,
+                // pausa de 120 ms y segundo pulso de 180 ms.
+                val pattern = longArrayOf(
+                    0, 180, 120, 180
+                )
+
                 vibrator.vibrate(
                     VibrationEffect.createWaveform(pattern, -1)
                 )
-                tvVibrationInfo.text = "Patrón ejecutado: doble vibración"
+
+                tvVibrationInfo.text =
+                    "Patrón ejecutado: doble vibración"
             }
 
+            // RETO V1: Triple pulso progresivo
             3 -> {
-                // TODO RETO V1:
-                // Sustituye este mensaje por un patrón diseñado por ti.
-                // Puedes agregar más tiempos al arreglo o investigar amplitudes.
-                Toast.makeText(
-                    this,
-                    "Reto pendiente: diseña tu patrón personalizado",
-                    Toast.LENGTH_SHORT
-                ).show()
+
+                // Secuencia de tiempos en milisegundos:
+                // 0 ms: iniciar inmediatamente.
+                // 150 ms: primera vibración corta.
+                // 150 ms: pausa.
+                // 250 ms: segunda vibración media.
+                // 150 ms: pausa.
+                // 400 ms: tercera vibración larga.
+                //
+                // El patrón tiene tres pulsos progresivos.
+                // No se repite automáticamente (-1).
+
+                val customPattern = longArrayOf(
+                    0, 150, 150, 250, 150, 400
+                )
+
+                vibrator.vibrate(
+                    VibrationEffect.createWaveform(
+                        customPattern,
+                        -1
+                    )
+                )
+
+                tvVibrationInfo.text =
+                    "Patrón ejecutado: triple pulso progresivo\n" +
+                            "Vibraciones: 150 ms, 250 ms y 400 ms\n" +
+                            "Pausas: 150 ms entre pulsos"
             }
         }
     }
 
-    // TODO RETO V2 (opcional):
-    // Permite que el usuario configure algún parámetro del patrón desde la interfaz.
+    override fun onStop() {
+        super.onStop()
+
+        // Detener cualquier vibración al salir
+        vibrator.cancel()
+    }
 }
